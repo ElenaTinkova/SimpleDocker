@@ -1,0 +1,16 @@
+#version: "3.9"
+services:
+  web-srv:
+    container_name: web-srv
+    hostname: web-srv
+    build:
+      context: .
+      dockerfile: ./dockerfile-websrv
+  proxy:
+    container_name: proxy
+    hostname: proxy
+    build:
+      context: .
+      dockerfile: ./dockerfile-proxy
+    ports:
+      - "80:8080"

@@ -1,0 +1,28 @@
+FROM ubuntu:20.04
+
+WORKDIR /home
+
+RUN apt-get update && apt-get install -y nginx spawn-fcgi libfcgi-dev gcc curl; \
+    rm -rf /var/lib/apt/lists/*; \
+    useradd -m bulgur
+
+
+COPY ./server/nginx/web-srv.conf /etc/nginx/nginx.conf
+COPY ./server/main.c .
+COPY ./server/server.sh .
+
+RUN chmod +x server.sh && gcc -o myserver main.c -lfcgi; \
+    mkdir -p /var/log/nginx/ /var/lib/nginx/; \
+    chown -R bulgur:bulgur /var/log/nginx/ /var/lib/nginx/; \
+    touch /run/nginx.pid; chown bulgur:bulgur /run/nginx.pid; \
+    chmod ug-s /usr/sbin/unix_chkpwd /usr/bin/mount \
+    /usr/sbin/pam_extrausers_chkpwd /usr/bin/passwd \
+    /usr/bin/chsh /usr/bin/newgrp /usr/bin/gpasswd \
+    /usr/bin/chfn /usr/bin/chage /usr/bin/umount \
+    /usr/bin/wall /usr/bin/su /usr/bin/expiry;
+
+HEALTHCHECK none
+
+USER bulgur
+
+ENTRYPOINT ["sh", "-c", "./server.sh"]
